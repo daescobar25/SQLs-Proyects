@@ -1,0 +1,117 @@
+/*
+NorthWind Data Exploration
+Analisis de los datos pertenecientes a la BD NorthWind
+
+Habilidades Utilizadas: Principalmente enfocado en COMANDOS SQL DDL y DML (Joins, CTE's, Temp Tables, Windows Functions, Aggregate Functions, Creating Views, 
+Converting Data Types)
+*/
+
+---------------------------------------------- DML Commands ---------------------------------------------
+----------------------------------------------------------------------------------------------------------
+
+-- Showing only the Date with a DateTime field
+
+Select
+FirstName
+,LastName
+,Title
+,DateOnlyBirthDate = CONVERT(date, BirthDate)
+FROM Employees
+ORDER BY Birthdate;
+
+-- OrderDetails amount per line item
+SELECT OrderID, ProductID, UnitPrice, Quantity, TotalPrice = UnitPrice * Quantity
+FROM [Order Details]
+ORDER BY OrderID, ProductID; 
+
+-- Number of customers 
+SELECT COUNT (CustomerID) AS TotalCustomers
+FROM Customers;
+
+-- Countries where there are customers
+SELECT Country FROM Customers
+GROUP BY Country; 
+
+-- Products with associated supplier names
+SELECT * FROM Suppliers
+SELECT * FROM Products 
+SELECT ProductID, ProductName, CompanyName 
+FROM Products
+JOIN Suppliers 
+ON Products.SupplierID = Suppliers.SupplierID;
+
+-- Show a list of the Orders that were made,
+including the Shipper that was used but only those rows with an OrderID of less than
+10300
+SELECT * FROM Orders 
+SELECT * FROM Shippers 
+SELECT OrderID, OrderDate = CONVERT(date,OrderDate) , CompanyName 
+FROM Orders
+JOIN Shippers
+ON Orders.ShipVia = Shippers.ShipperID
+WHERE OrderID < 10300 
+ORDER BY OrderID; 
+
+-- Total number of products in each category
+SELECT * FROM Products 
+SELECT CategoryName, TotalProducts = COUNT(*) FROM Products
+JOIN Categories
+ON Products.CategoryID = Categories.CategoryID
+GROUP BY CategoryName
+ORDER BY COUNT(*)
+DESC;
+
+-- Customer list by region
+SELECT * FROM Customers
+SELECT CustomerID, CompanyName, Region FROM Customers
+ORDER BY CASE
+WHEN Region IS NULL THEN 1
+ELSE 0
+END,
+Region, CustomerID;
+
+-- High freight charges
+SELECT * FROM Orders 
+SELECT TOP 3 ShipCountry, AverageFreight = AVG(Freight) FROM Orders
+GROUP BY ShipCountry
+ORDER BY AverageFreight DESC;
+
+-- Inventory list
+Select
+Employees.EmployeeID
+,Employees.LastName
+,Orders.OrderID
+,Products.ProductName
+, [Order Details].Quantity
+From Employees
+join Orders
+on Orders.EmployeeID = Employees.EmployeeID
+join [Order Details]
+on Orders.OrderID = [Order Details].OrderID
+join Products
+on Products.ProductID = [Order Details].ProductID
+Order by
+Orders.OrderID
+,Products.ProductID;
+
+-- Customers with no orders
+Select
+Customers_CustomerID = Customers.CustomerID
+,Orders_CustomerID = Orders.CustomerID
+From Customers
+left join Orders
+on Orders.CustomerID = Customers.CustomerID
+Where
+Orders.CustomerID is null; 
+
+----------------------------------- DDL Commands -----------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+
+-- Creating a new date column formart for OrderDate
+ALTER TABLE Orders
+Add OrderDateConverted Date;
+
+Update Orders
+SET OrderDateConverted = CONVERT(Date,OrderDate);
+
+
